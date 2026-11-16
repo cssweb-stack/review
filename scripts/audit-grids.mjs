@@ -47,7 +47,7 @@ for(const width of widths){
  const el=stage.querySelector(stage.dataset.gridSelector);const s=getComputedStyle(el);const rect=el.getBoundingClientRect();
  return {id:stage.dataset.gridId,classes:el.className,display:s.display,columns:s.gridTemplateColumns,horizontal:s.columnGap,vertical:s.rowGap,gutterX:s.getPropertyValue('--bs-gutter-x'),gutterY:s.getPropertyValue('--bs-gutter-y'),width:rect.width,children:[...el.children].map(c=>({width:c.getBoundingClientRect().width,top:c.getBoundingClientRect().top,left:c.getBoundingClientRect().left})),label:document.querySelector(`[data-grid-reading="${stage.dataset.gridId}"]`).textContent};
  })}));readings.push(data);
- if([820,1800].includes(width)) await page.locator('.review-grid-example').filter({has:page.getByRole('heading',{name:'Sidebar — right',exact:true})}).screenshot({path:path.join(out,`sidebar-${width}.png`)});
+ if([820,1800].includes(width)) await page.locator('.review-grid-example').filter({has:page.getByRole('heading',{name:'Sidebar — right',exact:true})}).first().screenshot({path:path.join(out,`sidebar-${width}.png`)});
  if([375,820,1180,1800].includes(width))await page.screenshot({path:path.join(out,`review-grids-${width}.png`),fullPage:true});
 }
 await page.addScriptTag({path:process.env.GRID_AXE_SCRIPT || path.join(work,'review/node_modules/axe-core/axe.min.js')});

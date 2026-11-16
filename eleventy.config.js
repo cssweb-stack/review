@@ -71,6 +71,7 @@ builder.onLoad({ filter: /.*/, namespace: 'disabled-layout-guides' }, () => ({ c
 });
 });
 eleventyConfig.addWatchTarget('scripts', { resetConfig: true });
+eleventyConfig.addWatchTarget('data', { resetConfig: true });
 eleventyConfig.addWatchTarget('../css-shared/src/css');
 eleventyConfig.addWatchTarget('../css-shared/src/includes');
 eleventyConfig.addWatchTarget('../css-shared/docs/rules/code-cleanup.md');
