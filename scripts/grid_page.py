@@ -2,29 +2,32 @@
 from html import escape
 import json
 from pathlib import Path
-from grid_inventory import collect
+from grid_inventory import collect, SIDEBAR_CLASSES
 
 def family(p):
  c=p['classes'];ch=' | '.join(p['children'])
+ if c in SIDEBAR_CLASSES:return 'Sidebars Left & Right'
  if 'advising' in c or 'program-button' in c:return 'Combined Layouts'
  if 'list-columns' in c or 'course-resource' in c:return 'Equal Columns'
  if 'grid-five' in c or 'faculty-portrait-grid' in c:return 'Cards & Tiles'
  if 'row-cols' in c:return 'Equal Columns'
  if len(set(p['children']))==1:return 'Equal Columns'
- if 'image-text' in c or 'profile-page' in c or 'graduate-student' in c or 'unit-contact' in c:return 'Sidebars'
- if len(p['children'])==2:return 'Sidebars'
+ if 'image-text' in c or 'profile-page' in c or 'graduate-student' in c or 'unit-contact' in c:return 'Sidebars Left & Right'
+ if len(p['children'])==2:return 'Sidebars Left & Right'
  return 'Combined Layouts'
 
 def priority(p):
  # Show broadly reused arrangements before their narrower variants.
  units=len({use['unit'] for use in p['uses']})
- return (-units,-len(p['uses']),p['name'])
+ if p['classes'] in SIDEBAR_CLASSES:return (0,SIDEBAR_CLASSES.index(p['classes']),0,p['name'])
+ return (1,-units,-len(p['uses']),p['name'])
 
 def is_sidebar_column(classes):
- return any(token in classes.split() for token in ['profile-sidebar','image-text-media','unit-contact-office','student-photo-column','col-md-3','col-xl-3'])
+ return any(token in classes.split() for token in ['review-sidebar','profile-sidebar','image-text-media','unit-contact-office','student-photo-column','col-md-3','col-xl-3'])
 
 def name(p):
- if family(p)=='Sidebars':
+ if p['classes'] in SIDEBAR_CLASSES:return '.'+p['classes']
+ if family(p)=='Sidebars Left & Right':
   return 'Sidebar — '+('left' if is_sidebar_column(p['children'][0]) else 'right')
  c=p['classes'];ch=' | '.join(p['children'])
  if 'faculty-portrait-grid' in c:return 'People cards — '+('1 / 2 / 3 / 4 / 5 columns' if 'row-cols-xl-4' in c else '1 / 2 / 3 / 5 columns')
@@ -50,7 +53,7 @@ def advising_person():
 
 def specimen(p):
  c=p['classes'];children=p['children'];output=''
- if family(p)=='Sidebars':
+ if family(p)=='Sidebars Left & Right':
   text=json.loads((Path(__file__).resolve().parents[1]/'data/grid-placeholder.json').read_text())
   output='<div class="'+c+'">\n'
   for classes in children:
@@ -79,7 +82,7 @@ def specimen(p):
   buttons='<div class="'+c+'">\n'+''.join('<div class="'+ch+'">\n'+cell('Button group '+str(i+1))+'</div>\n' for i,ch in enumerate(children))+'</div>\n'
   if '--stacked' in c:
    return '<div class="row gy-4 gx-0 gx-md-5">\n<div class="col-12 col-xl-6">\n'+cell('Main content')+'</div>\n<div class="col-12 col-md-6 col-xl-3">\n'+cell('Supporting column')+'</div>\n<div class="col-12 col-md-6 col-xl-3">\n'+buttons+'</div>\n</div>\n'
-  return '<div class="row gy-4 gx-0 gx-md-5 profile-page">\n<div class="col-12 col-md-8 profile-biography">\n'+cell('Main content')+'</div>\n<div class="col-12 col-md-4 profile-sidebar sidebar-resources">\n'+buttons+'</div>\n</div>\n'
+  return '<div class="sidebar-right-med">\n<div class="profile-biography">\n'+cell('Main content')+'</div>\n<div class="profile-sidebar sidebar-resources">\n'+buttons+'</div>\n</div>\n'
  if 'row-cols' in c:children=[children[0]]*7
  output='<div class="'+c+'">\n'
  for i,ch in enumerate(children):
@@ -97,9 +100,9 @@ def build_grid_page(out,page):
  for i,p in enumerate(patterns):p.update(id='grid-'+str(i+1),name=name(p),family=family(p))
  body=''
  body+='<p>General page layouts from SSRI, PUBA, Ethnic Studies, Anthropology and Sociology. Resize this page or open it on another device to compare their columns and gaps.</p>\n'
- body+='<p>These examples use the existing shared styles. Names describe the current patterns; they are not the final standardized set. Responsive data tables and record directories are reviewed separately. Colored cells are placeholders. Seven cards reveal incomplete rows.</p>\n'
+ body+='<p>These examples use the existing shared styles. The six sidebar layouts are standardized; other layout groups remain under review. Responsive data tables and record directories are reviewed separately. Colored cells are placeholders. Seven cards reveal incomplete rows.</p>\n'
  body+='<p><strong>'+str(len(inventory['pages']))+' pages inventoried · '+str(len(patterns))+' layout signatures</strong></p>\n'
- groups=[('sidebars','Sidebars','Unequal columns, with supporting content on the left or right. Faculty bios use this same family.'),('equal-columns','Equal Columns','Equal-width rows with two, three or four columns, resource buttons and flowing lists.'),('cards-tiles','Cards & Tiles','Faculty and contact portrait grids, photo tiles and academic program tiles.'),('combined-layouts','Combined Layouts','Homepage arrangements and nested layouts such as paired advisors and sidebar button groups.')]
+ groups=[('sidebars','Sidebars Left & Right','Three sizes on each side, sharing one 33px gap and responsive progression.'),('equal-columns','Equal Columns','Equal-width rows with two, three or four columns, resource buttons and flowing lists.'),('cards-tiles','Cards & Tiles','Faculty and contact portrait grids, photo tiles and academic program tiles.'),('combined-layouts','Combined Layouts','Homepage arrangements and nested layouts such as paired advisors and sidebar button groups.')]
  body+='<div class="review-grid-tabs" role="tablist" aria-label="Layout patterns" hidden>\n'
  for key,label,intro in groups:
   body+='<button type="button" role="tab" id="tab-'+key+'" aria-controls="'+key+'" aria-selected="false" tabindex="-1">'+escape(label)+'</button>\n'
@@ -108,7 +111,7 @@ def build_grid_page(out,page):
   body+='<section id="'+key+'" data-grid-panel aria-labelledby="tab-'+key+'">\n<h2>'+escape(label)+'</h2>\n<p>'+escape(intro)+' Common patterns appear first.</p>\n'
   for p in sorted(patterns,key=priority):
    if p['family']!=label:continue
-   body+='<section class="review-grid-example" id="'+p['id']+'" aria-labelledby="'+p['id']+'-title">\n<h3 id="'+p['id']+'-title">'+escape(p['name'])+'</h3>\n'
+   body+='<section class="review-grid-example" id="'+p['id']+'">\n<h3 id="'+p['id']+'-title">'+escape(p['name'])+'</h3>\n'
    body+='<p class="review-grid-reading" data-grid-reading="'+p['id']+'">Resize to compare the shared column arrangement.</p>\n'
    body+='<div class="review-grid-stage" data-grid-id="'+p['id']+'" data-grid-selector=".'+'.'.join(p['classes'].split())+'">\n'+specimen(p)+'</div>\n'
    body+='<details>\n<summary>Used on '+str(len(p['uses']))+' pages · classes</summary>\n<p><code>'+escape(p['classes'])+'</code></p>\n<ul>\n'

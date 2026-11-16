@@ -214,7 +214,7 @@ if legacy_rules.exists():legacy_rules.unlink()
 for folder,title in [('heroes','Heroes'),('redirects-404s','Redirects and 404s')]:
  body=''
  (OUT/folder/'index.html').write_text(page(title,body))
-(OUT/'index.html').write_text(page('Review','<ul>\n<li><a href="redirects-404s/index.html">Redirects and 404s</a></li>\n<li><a href="heroes/index.html">Heroes</a></li>\n<li><a href="grids.html">Grids</a></li>\n</ul>').replace('href="../','href="'))
+(OUT/'index.html').write_text(page('Review','<ul>\n<li><a href="redirects-404s/index.html">Redirects and 404s</a></li>\n<li><a href="heroes/index.html">Heroes</a></li>\n<li><a href="grids.html">Sidebars Left &amp; Right</a></li>\n</ul>').replace('href="../','href="'))
 from grid_page import build_grid_page
 build_grid_page(OUT,page)
 print('Built Review:',len(units),'units in each section.')

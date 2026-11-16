@@ -34,7 +34,7 @@ await page.getByRole('tab').first().focus();
 await page.keyboard.press('End');
 if(await page.getByRole('tab',{selected:true}).innerText()!=='Combined Layouts')throw Error('End key failed');
 await page.keyboard.press('Home');
-if(await page.getByRole('tab',{selected:true}).innerText()!=='Sidebars')throw Error('Home key failed');
+if(await page.getByRole('tab',{selected:true}).innerText()!=='Sidebars Left & Right')throw Error('Home key failed');
 await page.keyboard.press('ArrowRight');
 if(await page.getByRole('tab',{selected:true}).innerText()!=='Equal Columns')throw Error('Arrow key failed');
 // Expand panels only inside the audit to measure every specimen in one pass.
@@ -47,7 +47,7 @@ for(const width of widths){
  const el=stage.querySelector(stage.dataset.gridSelector);const s=getComputedStyle(el);const rect=el.getBoundingClientRect();
  return {id:stage.dataset.gridId,classes:el.className,display:s.display,columns:s.gridTemplateColumns,horizontal:s.columnGap,vertical:s.rowGap,gutterX:s.getPropertyValue('--bs-gutter-x'),gutterY:s.getPropertyValue('--bs-gutter-y'),width:rect.width,children:[...el.children].map(c=>({width:c.getBoundingClientRect().width,top:c.getBoundingClientRect().top,left:c.getBoundingClientRect().left})),label:document.querySelector(`[data-grid-reading="${stage.dataset.gridId}"]`).textContent};
  })}));readings.push(data);
- if([820,1800].includes(width)) await page.locator('.review-grid-example').filter({has:page.getByRole('heading',{name:'Sidebar — right',exact:true})}).first().screenshot({path:path.join(out,`sidebar-${width}.png`)});
+ if([820,1800].includes(width)) await page.locator('.review-grid-example').filter({has:page.getByRole('heading',{name:'.sidebar-right-med',exact:true})}).first().screenshot({path:path.join(out,`sidebar-${width}.png`)});
  if([375,820,1180,1800].includes(width))await page.screenshot({path:path.join(out,`review-grids-${width}.png`),fullPage:true});
 }
 await page.addScriptTag({path:process.env.GRID_AXE_SCRIPT || path.join(work,'review/node_modules/axe-core/axe.min.js')});
@@ -61,7 +61,7 @@ for(const p of inventory.patterns){
   await page.setViewportSize({width,height:1000});await page.goto('http://'+use.unit+'.grids.test'+use.url,{waitUntil:'load'});
   const actual=await page.evaluate(p=>{
    const normal=el=>[...el.classList].filter(c=>! /^(?:mb|mt|mx|my|p[xy]?)-/.test(c)).join(' ');
-   const el=[...document.querySelectorAll('main [class]')].find(el=>normal(el)===p.classes&&(!p.context||normal(el.parentElement)===p.context)&&([...el.children].map(normal).join('|')===p.children.join('|')));
+   const el=[...document.querySelectorAll('main [class]')].find(el=>(/^sidebar-(left|right)-/.test(p.classes) ? el.classList.contains(p.classes) : normal(el)===p.classes&&(!p.context||normal(el.parentElement)===p.context)&&([...el.children].map(normal).join('|')===p.children.join('|'))));
    if(!el)return null;const s=getComputedStyle(el);const width=el.getBoundingClientRect().width;const child=el.firstElementChild;return {firstChildRatio:child?child.getBoundingClientRect().width/width:null,display:s.display,horizontal:s.columnGap,vertical:s.rowGap,gutterX:s.getPropertyValue('--bs-gutter-x'),gutterY:s.getPropertyValue('--bs-gutter-y')};
   },p);
   const sample=readings.find(r=>r.width===width)?.examples.find(e=>e.id===p.id);
