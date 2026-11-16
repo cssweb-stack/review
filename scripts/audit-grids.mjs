@@ -4,7 +4,7 @@ const { chromium } = await import(playwrightModule ? pathToFileURL(playwrightMod
 import fs from 'node:fs';
 import path from 'node:path';
 const work = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const out = path.join(work, 'css-shared/exports/grids');
+const out = path.join(work, 'css-shared/.local-notes/exports/grids');
 fs.mkdirSync(out,{recursive:true});
 const browser = await chromium.launch({executablePath:process.env.GRID_BROWSER || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
 const context = await browser.newContext({reducedMotion:'reduce'});
