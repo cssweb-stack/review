@@ -1,0 +1,73 @@
+name: Build and publish Review
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Review
+        uses: actions/checkout@v4
+        with:
+          path: review
+          persist-credentials: false
+      - name: Checkout shared source
+        uses: actions/checkout@v4
+        with:
+          repository: cssweb-stack/css-shared
+          ref: main
+          path: css-shared
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: review/package-lock.json
+      - name: Checkout unit sources for Review
+        shell: bash
+        run: |
+          set -euo pipefail
+          for unit in anth es geo pols psy puba sci soc ssri wgss; do
+            git clone --depth 1 "https://github.com/cssweb-stack/${unit}.git" "$unit"
+          done
+      - name: Validate shared source
+        run: npm --prefix css-shared run check
+      - name: Build the five reviewed sites for layout inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          for unit in anth es puba soc ssri; do
+            npm --prefix "$unit" ci --no-audit --no-fund
+            npm --prefix "$unit" run build
+          done
+      - name: Install Review dependencies
+        run: npm --prefix review ci --no-audit --no-fund
+      - name: Build Review
+        run: npm --prefix review run build
+        env:
+          SITE_PATH_PREFIX: /review/
+      - name: Record source revisions
+        shell: bash
+        run: |
+          for repo in review css-shared anth es geo pols psy puba sci soc ssri wgss; do
+            printf '%s: `%s`\n\n' "$repo" "$(git -C "$repo" rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          done
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Review
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: review/_site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

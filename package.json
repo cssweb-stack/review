@@ -1,0 +1,22 @@
+{
+  "name": "review",
+  "private": true,
+  "scripts": {
+    "clean": "node -e \"import('node:fs').then(fs=>{for(const p of ['_site','_generated'])fs.rmSync(p,{recursive:true,force:true})})\"",
+    "build": "eleventy",
+    "dev": "eleventy --serve --port=8090",
+    "audit:grids": "node scripts/audit-grids.mjs"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.2",
+    "axe-core": "^4.14.0",
+    "esbuild": "^0.28.2",
+    "nunjucks": "npm:@11ty/nunjucks@^3.3.0",
+    "playwright-core": "^1.65.0"
+  },
+  "overrides": {
+    "@11ty/chokidar-with-glob-support": "npm:chokidar@3.6.0",
+    "nunjucks": "npm:@11ty/nunjucks@^3.3.0"
+  }
+}
