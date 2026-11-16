@@ -30,11 +30,17 @@ messageOnStart: ({ localhostUrl }) => { console.log(`Local server: ${localhostUr
 const environment = new nunjucks.Environment(new nunjucks.FileSystemLoader([path.join(shared, 'includes'), shared], { noCache: true }), { autoescape: false });
 eleventyConfig.setLibrary('njk', environment);
 eleventyConfig.addFilter('url', reviewUrl);
+eleventyConfig.addFilter('telephone', value => {
+const cleaned = String(value || '').replace(/[^\d+]/g, '');
+if (/^\d{10}$/.test(cleaned)) return '+1' + cleaned;
+if (/^1\d{10}$/.test(cleaned)) return '+' + cleaned;
+return cleaned;
+});
 eleventyConfig.addTransform('reviewProjectUrls', function(content) {
 if (!this.page.outputPath?.endsWith('.html') || prefix === '/') return content;
 return content.replace(/\b(href|src|action)=(['"])(\/(?!\/)[^'"]*)\2/g, (_, attribute, quote, url) => `${attribute}=${quote}${reviewUrl(url)}${quote}`);
 });
-eleventyConfig.addGlobalData('site', { shortName: 'CSS Review', showUHLinks: false });
+eleventyConfig.addGlobalData('site', { shortName: 'CSS Review', showUHLinks: false, portraitCardGrid: true });
 eleventyConfig.addGlobalData('navigation', () => JSON.parse(fs.readFileSync(path.join(shared, 'data/common/review-navigation.json'), 'utf8')));
 eleventyConfig.addWatchTarget('../css-shared/src/data/common/review-navigation.json', { resetConfig: true });
 eleventyConfig.addGlobalData('reviewNavigation', () => {

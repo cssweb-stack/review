@@ -36,7 +36,7 @@ if(await page.getByRole('tab',{selected:true}).innerText()!=='Combined Layouts')
 await page.keyboard.press('Home');
 if(await page.getByRole('tab',{selected:true}).innerText()!=='Sidebars Left & Right')throw Error('Home key failed');
 await page.keyboard.press('ArrowRight');
-if(await page.getByRole('tab',{selected:true}).innerText()!=='Equal Columns')throw Error('Arrow key failed');
+if(await page.getByRole('tab',{selected:true}).innerText()!=='Portrait Card Grid')throw Error('Arrow key failed');
 // Expand panels only inside the audit to measure every specimen in one pass.
 await page.evaluate(()=>document.querySelectorAll('[data-grid-panel]').forEach(panel=>panel.hidden=false));
 const widths=[320,375,575,576,767,768,820,991,992,1024,1180,1199,1200,1399,1400,1599,1600,1800];
@@ -61,7 +61,7 @@ for(const p of inventory.patterns){
   await page.setViewportSize({width,height:1000});await page.goto('http://'+use.unit+'.grids.test'+use.url,{waitUntil:'load'});
   const actual=await page.evaluate(p=>{
    const normal=el=>[...el.classList].filter(c=>! /^(?:mb|mt|mx|my|p[xy]?)-/.test(c)).join(' ');
-   const el=[...document.querySelectorAll('main [class]')].find(el=>(/^sidebar-(left|right)-/.test(p.classes) ? el.classList.contains(p.classes) : normal(el)===p.classes&&(!p.context||normal(el.parentElement)===p.context)&&([...el.children].map(normal).join('|')===p.children.join('|'))));
+   const el=[...document.querySelectorAll('main [class]')].find(el=>((p.classes==='portrait-card-grid'||/^sidebar-(left|right)-/.test(p.classes)) ? el.classList.contains(p.classes) : normal(el)===p.classes&&(!p.context||normal(el.parentElement)===p.context)&&([...el.children].map(normal).join('|')===p.children.join('|'))));
    if(!el)return null;const s=getComputedStyle(el);const width=el.getBoundingClientRect().width;const child=el.firstElementChild;return {firstChildRatio:child?child.getBoundingClientRect().width/width:null,display:s.display,horizontal:s.columnGap,vertical:s.rowGap,gutterX:s.getPropertyValue('--bs-gutter-x'),gutterY:s.getPropertyValue('--bs-gutter-y')};
   },p);
   const sample=readings.find(r=>r.width===width)?.examples.find(e=>e.id===p.id);

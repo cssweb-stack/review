@@ -17,7 +17,7 @@ class Tree(HTMLParser):
    if self.stack[i].tag==t:self.stack=self.stack[:i];break
  def walk(self,n=None):
   for c in (n or self.root).children:yield c;yield from self.walk(c)
-layouts=['grid-welcome','grid-two','grid-three','grid-four','grid-five','grid-profile','grid-standard','grid-compact','grid-advisors','advising-grid','advising-person','program-button-sets','news-feed-grid','list-columns-two']+SIDEBAR_CLASSES
+layouts=['grid-welcome','grid-two','grid-three','grid-four','grid-five','grid-profile','grid-standard','grid-compact','grid-advisors','advising-grid','advising-person','program-button-sets','news-feed-grid','list-columns-two']+SIDEBAR_CLASSES+['portrait-card-grid']
 def norm(cls):return ' '.join(c for c in cls if not re.match(r'^(?:mb|mt|mx|my|p[xy]?)-',c))
 def collect():
  patterns={};pages=[]
@@ -45,10 +45,10 @@ def collect():
     equal=len(set(children))==1
     context = norm(n.parent.cls) if n.parent and 'course-resource-grid' in n.cls else ''
     sig=context+' / '+norm(n.cls)+' > '+ ('REPEAT '+children[0] if equal and children else ' | '.join(children))
-    standard=next((c for c in n.cls if c in SIDEBAR_CLASSES),None)
+    standard=next((c for c in n.cls if c in SIDEBAR_CLASSES or c=='portrait-card-grid'),None)
     if standard:sig=standard
 
-    if sig not in patterns:patterns[sig]={'classes':standard or norm(n.cls),'context':context,'children':(['review-content','review-sidebar'] if standard.startswith('sidebar-right-') else ['review-sidebar','review-content']) if standard else children,'uses':[],'counts':[]}
+    if sig not in patterns:patterns[sig]={'classes':standard or norm(n.cls),'context':context,'children':(['']*7 if standard=='portrait-card-grid' else ['review-content','review-sidebar'] if standard.startswith('sidebar-right-') else ['review-sidebar','review-content']) if standard else children,'uses':[],'counts':[]}
     pat=patterns[sig];ref={'unit':u,'url':url};
     if ref not in pat['uses']:pat['uses'].append(ref)
     pat['counts'].append(len(n.children));page['patterns'].append(sig)

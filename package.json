@@ -6,7 +6,8 @@
     "build": "eleventy",
     "dev": "eleventy --serve --port=8090",
     "audit:grids": "node scripts/audit-grids.mjs",
-    "audit:sidebars": "node scripts/audit-sidebars.mjs"
+    "audit:sidebars": "node scripts/audit-sidebars.mjs",
+    "audit:portraits": "node scripts/audit-portraits.mjs"
   },
   "type": "module",
   "devDependencies": {

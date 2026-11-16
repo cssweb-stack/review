@@ -6,6 +6,7 @@ from grid_inventory import collect, SIDEBAR_CLASSES
 
 def family(p):
  c=p['classes'];ch=' | '.join(p['children'])
+ if c=='portrait-card-grid':return 'Portrait Card Grid'
  if c in SIDEBAR_CLASSES:return 'Sidebars Left & Right'
  if 'advising' in c or 'program-button' in c:return 'Combined Layouts'
  if 'list-columns' in c or 'course-resource' in c:return 'Equal Columns'
@@ -26,6 +27,7 @@ def is_sidebar_column(classes):
  return any(token in classes.split() for token in ['review-sidebar','profile-sidebar','image-text-media','unit-contact-office','student-photo-column','col-md-3','col-xl-3'])
 
 def name(p):
+ if p['classes']=='portrait-card-grid':return 'Portrait Card Grid'
  if p['classes'] in SIDEBAR_CLASSES:return '.'+p['classes']
  if family(p)=='Sidebars Left & Right':
   return 'Sidebar — '+('left' if is_sidebar_column(p['children'][0]) else 'right')
@@ -53,6 +55,9 @@ def advising_person():
 
 def specimen(p):
  c=p['classes'];children=p['children'];output=''
+ if c=='portrait-card-grid':
+  people=[{'slug':'portrait-example-'+str(i),'name':'Portrait Card Grid '+str(i) if i!=2 else 'Portrait Card Grid — Longer Example Name','lastName':str(i),'type':'staff','url':'','photo':'/assets/grid-placeholder.svg','photoWidth':600,'photoHeight':600,'title':'Example role'} for i in range(1,8)]
+  return '{% set directoryPeople = '+json.dumps(people,ensure_ascii=False)+' %}\n{% set profileIdentityPrefix = "portrait-example" %}\n{% set profileNameTag = "h3" %}\n{% include "layouts/profiles/people-grid.njk" %}\n'
  if family(p)=='Sidebars Left & Right':
   text=json.loads((Path(__file__).resolve().parents[1]/'data/grid-placeholder.json').read_text())
   output='<div class="'+c+'">\n'
@@ -100,9 +105,9 @@ def build_grid_page(out,page):
  for i,p in enumerate(patterns):p.update(id='grid-'+str(i+1),name=name(p),family=family(p))
  body=''
  body+='<p>General page layouts from SSRI, PUBA, Ethnic Studies, Anthropology and Sociology. Resize this page or open it on another device to compare their columns and gaps.</p>\n'
- body+='<p>These examples use the existing shared styles. The six sidebar layouts are standardized; other layout groups remain under review. Responsive data tables and record directories are reviewed separately. Colored cells are placeholders. Seven cards reveal incomplete rows.</p>\n'
+ body+='<p>These examples use the existing shared styles. The six sidebar layouts and Portrait Card Grid are standardized; other layout groups remain under review. Responsive data tables and record directories are reviewed separately. Colored cells are placeholders. Seven cards reveal incomplete rows.</p>\n'
  body+='<p><strong>'+str(len(inventory['pages']))+' pages inventoried · '+str(len(patterns))+' layout signatures</strong></p>\n'
- groups=[('sidebars','Sidebars Left & Right','Three sizes on each side, sharing one 33px gap and responsive progression.'),('equal-columns','Equal Columns','Equal-width rows with two, three or four columns, resource buttons and flowing lists.'),('cards-tiles','Cards & Tiles','Faculty and contact portrait grids, photo tiles and academic program tiles.'),('combined-layouts','Combined Layouts','Homepage arrangements and nested layouts such as paired advisors and sidebar button groups.')]
+ groups=[('sidebars','Sidebars Left & Right','Three sizes on each side, sharing one 33px gap and responsive progression.'),('portrait-card-grid','Portrait Card Grid','One shared grid for faculty, contact and related-person cards.'),('equal-columns','Equal Columns','Equal-width rows with two, three or four columns, resource buttons and flowing lists.'),('cards-tiles','Cards & Tiles','Faculty and contact portrait grids, photo tiles and academic program tiles.'),('combined-layouts','Combined Layouts','Homepage arrangements and nested layouts such as paired advisors and sidebar button groups.')]
  body+='<div class="review-grid-tabs" role="tablist" aria-label="Layout patterns" hidden>\n'
  for key,label,intro in groups:
   body+='<button type="button" role="tab" id="tab-'+key+'" aria-controls="'+key+'" aria-selected="false" tabindex="-1">'+escape(label)+'</button>\n'
