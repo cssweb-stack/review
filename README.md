@@ -42,9 +42,10 @@ Expected published address: https://cssweb-stack.github.io/review/
 
 Set GitHub Settings > Pages > Source to GitHub Actions. Push required changes in
 css-shared and Review, then use Actions > Build and publish Review > Run workflow.
-Publishing is manual; no push or scheduled triggers. The workflow checks out the
-ten unit sources as siblings and builds the five reviewed sites before Review,
-so layout inventory and heading/hero listings do not depend on a developer's
+Publishing is manual; no push or scheduled triggers. The workflow requires ANTH, ES, PUBA, SOC and SSRI sources as siblings and builds
+those five sites before Review. GEO, POLS, PSY, SCI and WGSS are optional: an
+unavailable repository produces a warning and its listings are omitted. This means
+layout inventory and heading/hero listings do not depend on a developer's
 local generated files. The summary records all source revisions. It publishes
 only Review's output, not the unit outputs. Shared sources use css-shared main;
 unit sources use each repository's default branch.

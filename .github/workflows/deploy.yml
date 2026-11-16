@@ -36,10 +36,7 @@ jobs:
       - name: Checkout unit sources for Review
         shell: bash
         run: |
-          set -euo pipefail
-          for unit in anth es geo pols psy puba sci soc ssri wgss; do
-            git clone --depth 1 "https://github.com/cssweb-stack/${unit}.git" "$unit"
-          done
+          bash review/scripts/checkout-units.sh
       - name: Validate shared source
         run: npm --prefix css-shared run check
       - name: Build the five reviewed sites for layout inventory
@@ -60,7 +57,11 @@ jobs:
         shell: bash
         run: |
           for repo in review css-shared anth es geo pols psy puba sci soc ssri wgss; do
-            printf '%s: `%s`\n\n' "$repo" "$(git -C "$repo" rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+            if [[ -d "$repo/.git" ]]; then
+              printf '%s: `%s`\n\n' "$repo" "$(git -C "$repo" rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+            else
+              printf '%s: unavailable; optional listings omitted\n\n' "$repo" >> "$GITHUB_STEP_SUMMARY"
+            fi
           done
       - name: Configure Pages
         uses: actions/configure-pages@v5
