@@ -44,7 +44,7 @@ eleventyConfig.addTransform('reviewProjectUrls', function(content) {
 if (!this.page.outputPath?.endsWith('.html') || prefix === '/') return content;
 return content.replace(/\b(href|src|action)=(['"])(\/(?!\/)[^'"]*)\2/g, (_, attribute, quote, url) => `${attribute}=${quote}${reviewUrl(url)}${quote}`);
 });
-eleventyConfig.addGlobalData('site', { shortName: 'CSS Review', showUHLinks: false, portraitCardGrid: true });
+eleventyConfig.addGlobalData('site', { shortName: 'CSS Review', showUHLinks: false, portraitCardGrid: true, equalColumnGrids: true });
 eleventyConfig.addGlobalData('navigation', () => JSON.parse(fs.readFileSync(path.join(shared, 'data/common/review-navigation.json'), 'utf8')));
 eleventyConfig.addWatchTarget('../css-shared/src/data/common/review-navigation.json', { resetConfig: true });
 eleventyConfig.addGlobalData('reviewNavigation', () => {

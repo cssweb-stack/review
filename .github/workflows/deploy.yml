@@ -43,7 +43,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for unit in anth es pols puba soc ssri; do
+          for unit in anth es pols puba soc ssri wgss; do
+            if [[ "$unit" == wgss && ! -d "$unit/src" ]]; then
+              echo "::warning::Optional WGSS source is unavailable; its review listings will be omitted."
+              continue
+            fi
             npm --prefix "$unit" ci --no-audit --no-fund
             npm --prefix "$unit" run build
           done
