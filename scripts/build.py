@@ -208,7 +208,7 @@ def pols_page_groups(urls):
  add('Other Pages',sorted(remaining))
  return groups
 body='<div class="row gy-5 gx-0 gx-md-5">\n'
-for key,label in [('ssri','SSRI'),('soc','Sociology (SOC)'),('es','Ethnic Studies (ES)'),('puba','Public Administration (PUBA)'),('anth','Anthropology (ANTH)'),('pols','Political Science (POLS)')]:
+for key,label in [('ssri','SSRI'),('soc','Sociology (SOC)'),('es','Ethnic Studies (ES)'),('puba','Public Administration (PUBA)'),('anth','Anthropology (ANTH)'),('pols','Political Science (POLS)'),('wgss','Women, Gender, and Sexuality Studies (WGSS)')]:
  project=WORK/key;headings={};source_paths={};page_titles={}
  for source in sorted((project/'src').rglob('*.html')):
   text=source.read_text();m=re.search(r'^permalink:\s*[\"\']?([^\"\'\n]+)',text,re.M)
