@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import { build } from 'esbuild';
 import { EleventyRenderPlugin } from '@11ty/eleventy';
+import { formatGeneratedHtml } from '../css-shared/scripts/unit-site/html-format.mjs';
 const project = path.dirname(fileURLToPath(import.meta.url));
 const shared = path.resolve(project, '../css-shared/src');
 const pathPrefix = '/' + (process.env.SITE_PATH_PREFIX || '').split('/').filter(Boolean).join('/') + '/';
@@ -29,6 +30,9 @@ messageOnStart: ({ localhostUrl }) => { console.log(`Local server: ${localhostUr
 });
 const environment = new nunjucks.Environment(new nunjucks.FileSystemLoader([path.join(shared, 'includes'), shared], { noCache: true }), { autoescape: false });
 eleventyConfig.setLibrary('njk', environment);
+eleventyConfig.addTransform('formatGeneratedHtml', function(content) {
+return this.page.outputPath?.endsWith('.html') ? formatGeneratedHtml(content) : content;
+});
 eleventyConfig.addFilter('url', reviewUrl);
 eleventyConfig.addFilter('telephone', value => {
 const cleaned = String(value || '').replace(/[^\d+]/g, '');
