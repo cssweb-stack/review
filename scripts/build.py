@@ -35,6 +35,7 @@ for directory in sorted((SHARED/'data/units').iterdir()):
  base='https://cssweb-stack.github.io/'+key
  migration=load(directory/'url-migration.json')
  body='<p>Links test the GitHub preview. Changes must be uploaded there before they can pass.</p>\n<h2>Redirects</h2>\n<ul>\n'
+ if key=='pols':body='<p><a href="/final-review/pols.html">POLS final page-by-page review</a></p>\n'+body
  for row in migration.get('redirects',[]):body+='<li><a href="'+escape(base+row['from'],quote=True)+'">'+escape(row['from'])+'</a> → <a href="'+escape(row['to'] if row['to'].startswith('https://') else base+row['to'],quote=True)+'">'+escape(row['to'])+'</a></li>\n'
  if not migration.get('redirects'):body+='<li>No redirects recorded yet.</li>\n'
  body+='</ul>\n<h2>Retired pages: expect 404</h2>\n<ul>\n'
@@ -110,6 +111,18 @@ for directory in sorted((SHARED/'data/units').iterdir()):
   else:
    rows=sorted(rows,key=lambda row:(row[0].casefold(),row[1]))
   sections.append((heading,rows,2))
+ if key=='pols':
+  degree=load(directory/'degree-navigation.json');sections=[];remaining={row[1]:row for rows in groups.values() for row in rows}
+  def add_pols_heroes(label,urls):
+   selected=[remaining.pop(url) for url in urls if url in remaining]
+   if selected:sections.append((label,selected,2))
+  for label,prefix in [('General Pages',''),('Specializations','/about/specializations/'),('Undergraduate Pages','/undergraduate/')]:
+   urls=sorted(url for url in remaining if url.startswith(prefix) and (prefix or (not url.startswith(('/graduate/','/undergraduate/','/faculty/','/about/specializations/')) and url not in ['/privacy.html','/policies-procedures.html','/404.html'])))
+   add_pols_heroes(label,urls)
+  for family in degree.values():add_pols_heroes(family['label']+' · Shared Navigation',[item['url'] for item in family['pages']])
+  add_pols_heroes('Graduate Resources',sorted(url for url in remaining if url.startswith('/graduate/')))
+  for label in ['Faculty Landing Pages','Faculty Bio Pages','Privacy and Policies']:add_pols_heroes(label,[row[1] for row in groups.get(label,[])])
+  add_pols_heroes('Other Pages',sorted(remaining))
  if key=='anth':
   # Review priorities only; preserve each existing entry and its use-count label.
   primary_urls={'/','/about/why-study-anth.html','/about/subfields-specializations/','/about/department-news.html','/about/colloquia.html','/anth-courses.html','/contact.html','/support-anth.html','/undergraduate/minor-anth.html','/undergraduate/medical-anthropology-minor.html','/undergraduate/major-ba.html','/undergraduate/major/requirements-before-fall-2022.html','/undergraduate/bam/'}
@@ -179,8 +192,23 @@ def navigation_urls(items):
   url=item.get('url','')
   if url.startswith('/') and not url.startswith('//'):yield urlsplit(url).path
   yield from navigation_urls(item.get('children',[]))
+def pols_page_groups(urls):
+ remaining=set(urls);groups=[]
+ def add(label,ordered):
+  selected=[url for url in ordered if url in remaining]
+  if selected:groups.append((label,selected));remaining.difference_update(selected)
+ order=list(dict.fromkeys(navigation_urls(load(SHARED/'data/units/pols/navigation.json',[]))))
+ def matching(prefix):return [url for url in order if url.startswith(prefix)]+sorted(url for url in remaining if url.startswith(prefix) and url not in order)
+ add('Main Pages',[url for url in order if not url.startswith(('/undergraduate/','/graduate/','/about/specializations/','/faculty/'))])
+ add('Specializations',matching('/about/specializations/'))
+ add('Undergraduate',matching('/undergraduate/'))
+ for family in load(SHARED/'data/units/pols/degree-navigation.json').values():add(family['label']+' · Shared Navigation',[row['url'] for row in family['pages']])
+ add('Graduate Resources',matching('/graduate/'))
+ add('Faculty',matching('/faculty/'))
+ add('Other Pages',sorted(remaining))
+ return groups
 body='<div class="row gy-5 gx-0 gx-md-5">\n'
-for key,label in [('ssri','SSRI'),('soc','Sociology (SOC)'),('es','Ethnic Studies (ES)'),('puba','Public Administration (PUBA)'),('anth','Anthropology (ANTH)')]:
+for key,label in [('ssri','SSRI'),('soc','Sociology (SOC)'),('es','Ethnic Studies (ES)'),('puba','Public Administration (PUBA)'),('anth','Anthropology (ANTH)'),('pols','Political Science (POLS)')]:
  project=WORK/key;headings={};source_paths={};page_titles={}
  for source in sorted((project/'src').rglob('*.html')):
   text=source.read_text();m=re.search(r'^permalink:\s*[\"\']?([^\"\'\n]+)',text,re.M)
@@ -194,8 +222,9 @@ for key,label in [('ssri','SSRI'),('soc','Sociology (SOC)'),('es','Ethnic Studie
  nav=list(dict.fromkeys(url for url in navigation_urls(load(SHARED/'data/units'/key/'navigation.json',[])) if url in headings))
  remaining=sorted(set(headings)-set(nav),key=lambda url:(headings[url].casefold(),url))
  body+='<section class="col-12 col-md-6 col-xl-3" data-review-unit="'+key+'">\n<h2>'+escape(label)+'</h2>\n'
- for group,urls in [('navigation',nav),('other',remaining)]:
-  if group=='other':body+='<hr>\n<h3>Other Pages</h3>\n'
+ for group,urls in (pols_page_groups(headings) if key=='pols' else [('navigation',nav),('other',remaining)]):
+  if key=='pols':body+='<h3>'+escape(group)+'</h3>\n'
+  elif group=='other':body+='<hr>\n<h3>Other Pages</h3>\n'
   body+='<div class="review-heading-list" data-page-group="'+group+'">\n'
   for url in urls:
    body+='<p class="review-heading-entry" data-page-path="'+escape(url,quote=True)+'">\n<a href="https://cssweb-stack.github.io/'+key+escape(url,quote=True)+'">'+escape(headings[url] or 'Missing H1')+'</a><br>\n<span class="review-source-path">'+escape(source_paths[url])+'</span><br>\n<span class="review-page-title">'+escape(page_titles[url])+'</span>\n</p>\n'
@@ -203,6 +232,22 @@ for key,label in [('ssri','SSRI'),('soc','Sociology (SOC)'),('es','Ethnic Studie
  body+='</section>\n'
 body+='</div>\n'
 (OUT/'headings.html').write_text(page('Page Headings',body))
+
+# Final walkthrough uses the same degree-navigation order as the unit.
+(OUT/'final-review').mkdir(exist_ok=True)
+project=WORK/'pols';current={}
+for source in sorted((project/'src').rglob('*.html')):
+ text=source.read_text();match=re.search(r'^permalink:\s*["\']?([^"\'\n]+)',text,re.M)
+ if not match:continue
+ url=match[1];built=project/'_site'/('index.html' if url=='/' else url.lstrip('/')+('index.html' if url.endswith('/') else ''))
+ current[url]=first_heading(built.read_text()) if built.exists() else 'Build required'
+body='<p>Review each page. MA and PhD pages are grouped in their shared navigation order.</p>\n<p><a href="/redirects-404s/pols.html">Redirects and 404 tests</a> · <a href="/headings.html">Page headings and search titles</a></p>\n'
+for label,urls in pols_page_groups(current):
+ body+='<h2>'+escape(label)+'</h2>\n<ul>\n'
+ for url in urls:body+='<li><a href="https://cssweb-stack.github.io/pols'+escape(url,quote=True)+'">'+escape(current[url])+'</a></li>\n'
+ body+='</ul>\n'
+(OUT/'final-review/pols.html').write_text(page('POLS Final Page Review',body))
+
 # Rules use the shared document itself, rather than a second copy of its contents.
 (OUT/'rules').mkdir(exist_ok=True)
 # Render the editable shared document during each Eleventy build, never a copied snapshot.
