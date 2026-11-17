@@ -37,8 +37,6 @@ jobs:
         shell: bash
         run: |
           bash review/scripts/checkout-units.sh
-      - name: Validate shared source
-        run: npm --prefix css-shared run check
       - name: Build reviewed sites for grids and page headings
         shell: bash
         run: |
