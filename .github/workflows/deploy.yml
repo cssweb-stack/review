@@ -54,11 +54,11 @@ jobs:
       - name: Record source revisions
         shell: bash
         run: |
-          for repo in review css-shared anth es geo pols psy puba sci soc ssri wgss; do
+          for repo in review css-shared anth es geo pols puba soc ssri wgss; do
             if [[ -d "$repo/.git" ]]; then
               printf '%s: `%s`\n\n' "$repo" "$(git -C "$repo" rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
             else
-              printf '%s: unavailable; optional listings omitted\n\n' "$repo" >> "$GITHUB_STEP_SUMMARY"
+              printf '%s: unavailable\n\n' "$repo" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
       - name: Configure Pages
