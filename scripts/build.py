@@ -297,4 +297,6 @@ for folder,title in [('heroes','Heroes'),('redirects-404s','Redirects and 404s')
 (OUT/'index.html').write_text(page('Review','<ul>\n<li><a href="redirects-404s/index.html">Redirects and 404s</a></li>\n<li><a href="heroes/index.html">Heroes</a></li>\n<li><a href="grids.html">Sidebars Left &amp; Right</a></li>\n</ul>').replace('href="../','href="'))
 from grid_page import build_grid_page
 build_grid_page(OUT,page)
+from asset_link_pages import build_asset_link_pages
+build_asset_link_pages(OUT,page,WORK,SHARED)
 print('Built Review:',len(units),'units in each section.')
