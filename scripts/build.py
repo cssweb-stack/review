@@ -2,7 +2,7 @@ from pathlib import Path
 from collections import Counter
 from html import escape,unescape
 from html.parser import HTMLParser
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit,unquote
 import json,re,shutil,os
 ROOT=Path(__file__).resolve().parents[1]
 WORK=ROOT.parent
@@ -36,11 +36,18 @@ if not HEADINGS_ONLY:
   identity=load(directory/'unit-details.json');settings=load(directory/'site-settings.json');name=identity.get('shortName',key.upper());units.append((key,name))
   base='https://cssweb-stack.github.io/'+key
   migration=load(directory/'url-migration.json')
+  evidence=load(SHARED/'data/common/original-public-urls.json').get(key,{})
+  source_paths={unquote(item['path']).casefold():item['sources'] for item in evidence.get('paths',[])}
   body='<p>Links test the GitHub preview. Changes must be uploaded there before they can pass.</p>\n<h2>Redirects</h2>\n<ul>\n'
+  if not load(SHARED/'data/common/redirect-policy.json').get('enabled', False):body='<p>Redirect generation is OFF during development. These are saved original-site mappings for launch, not active redirect pages.</p>\n<h2>Saved original-site mappings</h2>\n<ul>\n'
   if key=='pols':body='<p><a href="/final-review/pols.html">POLS final page-by-page review</a></p>\n'+body
-  for row in migration.get('redirects',[]):body+='<li><a href="'+escape(base+row['from'],quote=True)+'">'+escape(row['from'])+'</a> → <a href="'+escape(row['to'] if row['to'].startswith('https://') else base+row['to'],quote=True)+'">'+escape(row['to'])+'</a></li>\n'
+  for row in migration.get('redirects',[]):
+   proof=source_paths.get(unquote(row['from']).casefold(),[])
+   original=settings.get('url',base).rstrip('/')+row['from']
+   destination=row['to'] if row['to'].startswith('https://') else base+row['to']
+   body+='<li><a href="'+escape(original,quote=True)+'">'+escape(row['from'])+'</a> → <a href="'+escape(destination,quote=True)+'">'+escape(row['to'])+'</a><br>Source evidence: '+escape('; '.join(Path(item.split(' (')[0]).name+(' (original article link)' if '(original article link)' in item else '') for item in proof) or 'Not verified')+'</li>\n'
   if not migration.get('redirects'):body+='<li>No redirects recorded yet.</li>\n'
-  body+='</ul>\n<h2>Retired pages: expect 404</h2>\n<ul>\n'
+  body+='</ul>\n<p>Source evidence confirms that the old address belongs to the original site. Saved destination choices still require launch review, including changes made while redirects are disabled.</p>\n<h2>Retired pages: expect 404</h2>\n<ul>\n'
   for row in migration.get('retired',[]):body+='<li><a href="'+escape(base+row['from'],quote=True)+'">'+escape(row.get('label') or row['from'])+'</a> '+escape(row['from'])+'</li>\n'
   if not migration.get('retired'):body+='<li>No retired pages recorded.</li>\n'
   body+='</ul>\n<h2>404 test</h2>\n<ul>\n<li><a href="'+base+'/review-missing-page-test/">Open a nonexistent page</a></li>\n</ul>\n'
