@@ -102,7 +102,7 @@ if not HEADINGS_ONLY:
   displayed=[row for _,rows,_ in sections for row in rows]
   unit_counts=Counter(image_key(row) for row in displayed if row[2])
   use_counts={row[1]:unit_counts[image_key(row)] if row[2] else 0 for row in displayed}
-  body='<p>Red outlines mark duplicate image choices on replaceable pages. Fixed Pages stay unmarked; faculty pages, news article samples and privacy/policies/404 do not count toward duplicate warnings.</p>\n<ul>\n'+''.join('<li><a href="#'+re.sub(r'[^a-z0-9]+','-',group.lower()).strip('-')+'">'+escape(group)+'</a></li>\n' for group,_,_ in sections)+'</ul>\n'
+  body='<p>Red outlines mark duplicate image choices on replaceable pages. Fixed, faculty and privacy/policy/error pages stay unmarked, but their images count when reused by ordinary pages. News article samples do not add duplicate warnings.</p>\n<ul>\n'+''.join('<li><a href="#'+re.sub(r'[^a-z0-9]+','-',group.lower()).strip('-')+'">'+escape(group)+'</a></li>\n' for group,_,_ in sections)+'</ul>\n'
   for group,rows,level in sections:
    anchor=re.sub(r'[^a-z0-9]+','-',group.lower()).strip('-')
    body+='<hr>\n<h'+str(level)+' id="'+anchor+'">'+escape(group)+'</h'+str(level)+'>\n'

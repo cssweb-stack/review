@@ -78,9 +78,10 @@ def group_heroes(rows, source_info, navigation, degrees, news_index, unit):
 def duplicate_hero_urls(sections, unit):
     """Flag replaceable pages; fixed pages can cause a collision but stay protected."""
     from collections import Counter
-    ignored = {'Faculty Pages', 'Faculty Bio Pages', 'News Article Hero', 'News Article Exceptions', 'Privacy, Policies & 404'}
+    ignored = {'News Article Hero', 'News Article Exceptions'}
+    protected = {'Fixed Pages', 'Faculty Pages', 'Faculty Bio Pages', 'Privacy, Policies & 404'}
     def image(row):
         return re.sub(r'^/'+re.escape(unit)+r'(?=/media/)', '', urlsplit(row[2] or '').path)
     candidates = [(group, row) for group, rows, _ in sections if group not in ignored for row in rows]
     counts = Counter(image(row) for _, row in candidates if image(row))
-    return {row[1] for group, row in candidates if group != 'Fixed Pages' and image(row) and counts[image(row)] > 1}
+    return {row[1] for group, row in candidates if group not in protected and image(row) and counts[image(row)] > 1}
