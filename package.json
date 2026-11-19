@@ -4,6 +4,7 @@
   "scripts": {
     "clean": "node -e \"import('node:fs').then(fs=>{for(const p of ['_site','_generated'])fs.rmSync(p,{recursive:true,force:true})})\"",
     "build": "eleventy",
+    "refresh:headings": "node scripts/refresh-headings.mjs",
     "dev": "eleventy --serve --port=8090",
     "audit:grids": "node scripts/audit-grids.mjs",
     "audit:sidebars": "node scripts/audit-sidebars.mjs",

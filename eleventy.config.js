@@ -8,6 +8,9 @@ import { EleventyRenderPlugin } from '@11ty/eleventy';
 import { formatGeneratedHtml } from '../css-shared/scripts/unit-site/html-format.mjs';
 const project = path.dirname(fileURLToPath(import.meta.url));
 const shared = path.resolve(project, '../css-shared/src');
+const headingsOnly = process.env.REVIEW_HEADINGS_ONLY === '1';
+const reviewInput = headingsOnly ? '_generated/headings' : '_generated';
+const reviewOutput = headingsOnly ? '_site/headings' : '_site';
 const pathPrefix = '/' + (process.env.SITE_PATH_PREFIX || '').split('/').filter(Boolean).join('/') + '/';
 const prefix = pathPrefix === '//' ? '/' : pathPrefix;
 const reviewUrl = value => typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') && prefix !== '/' && !value.startsWith(prefix) ? prefix + value.slice(1) : value;
@@ -56,6 +59,10 @@ const sections = Object.fromEntries(['heroes', 'redirects-404s'].map(section => 
 label: 'Review units',
 pages: [...first, ...remaining].map(key => ({ label: key.toUpperCase(), url: `/${section}/${key}.html`, groupStart: first.length > 0 && key === remaining[0] }))
 }]));
+sections.headings = {
+label: 'Page Headings',
+pages: current.map(key => ({ label: key.toUpperCase(), url: `/headings/${key}.html` }))
+};
 return sections;
 });
 const prepare = () => execFileSync('python3', ['scripts/build.py'], {
@@ -92,7 +99,7 @@ eleventyConfig.addPassthroughCopy({ [path.join(shared, 'assets/js/review-grids.j
 eleventyConfig.addPassthroughCopy({ [path.join(shared, 'assets/review/grid-placeholder.svg')]: 'assets/grid-placeholder.svg' });
 eleventyConfig.addPassthroughCopy({ [path.join(shared, 'assets/js/site.js')]: 'assets/js/site.js' });
 return {
-dir: { input: '_generated', output: '_site', layouts: path.relative(path.join(project, '_generated'), path.join(shared, 'includes')) },
+dir: { input: reviewInput, output: reviewOutput, layouts: path.relative(path.join(project, reviewInput), path.join(shared, 'includes')) },
 templateFormats: ['html', 'md'],
 markdownTemplateEngine: 'njk',
 htmlTemplateEngine: 'njk',

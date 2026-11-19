@@ -7,6 +7,22 @@ Run `go` (the standard clean/dev alias), or `npm run dev`. Dev rebuilds the page
 - `redirects-404s/`: one page per unit, bullet lists from shared migration data.
 - `heroes/`: one page per unit, main/faculty/policy groups alphabetized by page title.
 
+## Fast naming-review refresh
+
+After changing a unit title, H1 or filename, run from Review:
+
+```sh
+npm run refresh:headings -- geo
+```
+
+Specify all affected units if needed. This rebuilds those unit sites and all eight
+Review naming pages in one command. It skips unrelated hero/media/grid inventory
+work and preserves those existing Review pages. Refresh the browser afterward.
+The agent must run this before reporting an edit visible on Review; the user does
+not need to run separate rebuilds. A full `npm run build` remains the publishing
+build and is needed after changes to other Review sections or shared page styling.
+This is a refresh command, not a new server or publishing/check workflow.
+
 Links test the GitHub unit previews. Upload unit/shared changes before expecting those tests to reflect local edits. Units without migration mappings say so. Rebuild Review after changing unit source, heroes or migration data.
 
 Uses the same Eleventy, Nunjucks and esbuild dependencies as the unit sites. No tracking or API keys. Publishing uses the manual workflow described below. Output is generated in `_site`.

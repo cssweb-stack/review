@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Run from the workspace containing the sibling repository checkouts.
 set -euo pipefail
-required_units=(anth es pols puba soc ssri)
-optional_units=(geo psy sci wgss)
+required_units=(anth es geo pols puba soc ssri wgss)
+optional_units=(psy sci)
 for unit in "${required_units[@]}"; do
   GIT_TERMINAL_PROMPT=0 git clone --depth 1 "https://github.com/cssweb-stack/${unit}.git" "$unit"
   if [[ ! -d "$unit/src" ]]; then
